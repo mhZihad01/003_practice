@@ -1,279 +1,188 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
-// Candidate structure to store name and ID
-typedef struct {
+// Define the number of candidates and judges
+#define NUM_CANDIDATES 6
+#define NUM_JUDGES 5
+
+// Structure to store candidate information
+struct Candidate {
     char name[50];
     int id;
-} Candidate;
+};
 
-// Judge structure to store judge information
-typedef struct {
+// Structure to store judge information
+struct Judge {
     char name[50];
     char expertise[20];
-} Judge;
+};
 
-// Score sheet structure for each candidate
-typedef struct {
-    int judgeId;
-    int music;
-    int dance;
-    int vocal;
-    int visual;
-    int expression;
-    int total;
-} ScoreSheet;
+// Structure to store scores
+struct Score {
+    int value;
+};
 
-// Function prototypes
-void initializeCandidates(Candidate candidates[]);
-void inputJudgeInfo(Judge *judge);
-void inputScores(ScoreSheet scores[], Candidate candidates[], Judge judge);
-void reviewScores(ScoreSheet scores[], Candidate candidates[]);
-bool confirmSubmission();
-void modifyScores(ScoreSheet scores[], Candidate candidates[]);
-void calculateTotals(ScoreSheet scores[]);
-void displayFinalResults(ScoreSheet scores[], Candidate candidates[]);
+// Global arrays
+struct Candidate candidates[NUM_CANDIDATES];
+struct Judge judges[NUM_JUDGES];
+struct Score scores[NUM_JUDGES][NUM_CANDIDATES];
 
-int main() {
-    // Initialize candidates
-    Candidate candidates[6];
-    initializeCandidates(candidates);
-    
-    // Judge information
-    Judge judge;
-    inputJudgeInfo(&judge);
-    
-    // Score sheets for each candidate
-    ScoreSheet scores[6];
-    
-    bool submitted = false;
-    while (!submitted) {
-        // Input scores
-        inputScores(scores, candidates, judge);
-        
-        // Review and confirm
-        reviewScores(scores, candidates);
-        submitted = confirmSubmission();
-        
-        if (!submitted) {
-            // Allow modifications
-            modifyScores(scores, candidates);
-        }
-    }
-    
-    printf("***Final submission completed.***\n");
-    
-    // Calculate totals and display results (bonus feature)
-    calculateTotals(scores);
-    displayFinalResults(scores, candidates);
-    
-    return 0;
-}
-
-// Initialize candidate data
-void initializeCandidates(Candidate candidates[]) {
+// Function to set up initial data
+void setup_data() {
+    // Set up candidates
     strcpy(candidates[0].name, "Jiyeon Park");
     candidates[0].id = 100001;
-    
     strcpy(candidates[1].name, "Ethan Smith");
     candidates[1].id = 100002;
-    
     strcpy(candidates[2].name, "Helena Silva");
     candidates[2].id = 100003;
-    
     strcpy(candidates[3].name, "Liam Wilson");
     candidates[3].id = 100004;
-    
     strcpy(candidates[4].name, "Aisha Khan");
     candidates[4].id = 100005;
-    
-    strcpy(candidates[5].name, "Takeshi Yamamoto");
+    strcpy(candidates[5].name, "Oliver Chen");
     candidates[5].id = 100006;
+
+    // Set up judges
+    strcpy(judges[0].name, "Youngsoo Kim");
+    strcpy(judges[0].expertise, "Music");
+    strcpy(judges[1].name, "Sophia Lee");
+    strcpy(judges[1].expertise, "Dance");
+    strcpy(judges[2].name, "David Park");
+    strcpy(judges[2].expertise, "Vocal");
+    strcpy(judges[3].name, "Emma Johnson");
+    strcpy(judges[3].expertise, "Visual");
+    strcpy(judges[4].name, "Michael Brown");
+    strcpy(judges[4].expertise, "Expression");
 }
 
-// Input judge information
-void inputJudgeInfo(Judge *judge) {
-    printf("####################################\n");
-    printf("#     Audition Evaluation Entry    #\n");
-    printf("####################################\n");
-    
-    printf("> Judge Name: ");
-    fgets(judge->name, 50, stdin);
-    judge->name[strcspn(judge->name, "\n")] = '\0'; // Remove newline
-    
-    printf("> Expertise: ");
-    fgets(judge->expertise, 20, stdin);
-    judge->expertise[strcspn(judge->expertise, "\n")] = '\0'; // Remove newline
-    
-    printf("++++++++++++++++++++++++++++++++++++\n");
-}
-
-// Input scores for all candidates
-void inputScores(ScoreSheet scores[], Candidate candidates[], Judge judge) {
-    for (int i = 0; i < 6; i++) {
-        printf("Candidate: %s\n", candidates[i].name);
-        
-        // Store judge ID (using first letter of name as simple ID)
-        scores[i].judgeId = judge.name[0];
-        
-        // Input scores with validation
-        do {
-            printf("%s Proficiency: ", judge.expertise);
-            scanf("%d", &scores[i].music);
-        } while (scores[i].music < 10 || scores[i].music > 100);
-        
-        do {
-            printf("Dance: ");
-            scanf("%d", &scores[i].dance);
-        } while (scores[i].dance < 10 || scores[i].dance > 100);
-        
-        do {
-            printf("Vocal: ");
-            scanf("%d", &scores[i].vocal);
-        } while (scores[i].vocal < 10 || scores[i].vocal > 100);
-        
-        do {
-            printf("Visual: ");
-            scanf("%d", &scores[i].visual);
-        } while (scores[i].visual < 10 || scores[i].visual > 100);
-        
-        do {
-            printf("Expression: ");
-            scanf("%d", &scores[i].expression);
-        } while (scores[i].expression < 10 || scores[i].expression > 100);
-        
-        printf("------------------------------------\n");
-        getchar(); // Consume newline
+// Function to get a valid score between 10 and 100
+int get_valid_score() {
+    int score;
+    while (1) {
+        scanf("%d", &score);
+        if (score >= 10 && score <= 100) {
+            return score;
+        }
+        printf("Invalid score! Please enter between 10 and 100: ");
     }
 }
 
-// Review all entered scores
-void reviewScores(ScoreSheet scores[], Candidate candidates[]) {
-    printf("++++++++++++++++++++++++++++++++++++\n");
+// Function to show all scores entered by a judge
+void show_scores(int judge_num) {
+    printf("\n++++++++++++++++++++++++++++++++++++\n");
     printf("Submission completed.\n");
     printf("Please review your input!\n");
     printf("------------------------------------\n");
     
-    for (int i = 0; i < 6; i++) {
-        printf("%s: %d %d %d %d %d\n", 
-               candidates[i].name, 
-               scores[i].music, 
-               scores[i].dance, 
-               scores[i].vocal, 
-               scores[i].visual, 
-               scores[i].expression);
+    for (int i = 0; i < NUM_CANDIDATES; i++) {
+        printf("%s: %d\n", candidates[i].name, scores[judge_num][i].value);
     }
+    
+    printf("------------------------------------\n");
 }
 
-// Confirm submission
-bool confirmSubmission() {
+// Function to modify scores if needed
+void change_scores(int judge_num) {
     char choice;
-    printf("Would you like to submit? (Y/N) ");
+    printf("Do you want to change any scores? (Y/N): ");
     scanf(" %c", &choice);
-    getchar(); // Consume newline
     
-    return (choice == 'Y' || choice == 'y');
-}
-
-// Modify scores if needed
-void modifyScores(ScoreSheet scores[], Candidate candidates[]) {
-    char name[50];
-    int id;
-    bool found = false;
-    int index = -1;
-    
-    do {
-        printf("Enter candidate name to modify: ");
-        fgets(name, 50, stdin);
-        name[strcspn(name, "\n")] = '\0'; // Remove newline
+    if (choice == 'Y' || choice == 'y') {
+        char name[50];
+        int id, found = 0;
         
-        printf("Enter candidate ID (6 digits): ");
+        printf("Enter candidate name to change: ");
+        scanf(" %[^\n]", name);
+        printf("Enter candidate ID: ");
         scanf("%d", &id);
-        getchar(); // Consume newline
         
-        // Find candidate
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < NUM_CANDIDATES; i++) {
             if (strcmp(candidates[i].name, name) == 0 && candidates[i].id == id) {
-                found = true;
-                index = i;
+                printf("Enter new score for %s: ", name);
+                scores[judge_num][i].value = get_valid_score();
+                found = 1;
                 break;
             }
         }
         
         if (!found) {
-            printf("Candidate not found. Please try again.\n");
+            printf("Candidate not found!\n");
         }
-    } while (!found);
-    
-    // Modify scores for found candidate
-    printf("Modifying scores for %s:\n", candidates[index].name);
-    
-    do {
-        printf("Music Proficiency: ");
-        scanf("%d", &scores[index].music);
-    } while (scores[index].music < 10 || scores[index].music > 100);
-    
-    do {
-        printf("Dance: ");
-        scanf("%d", &scores[index].dance);
-    } while (scores[index].dance < 10 || scores[index].dance > 100);
-    
-    do {
-        printf("Vocal: ");
-        scanf("%d", &scores[index].vocal);
-    } while (scores[index].vocal < 10 || scores[index].vocal > 100);
-    
-    do {
-        printf("Visual: ");
-        scanf("%d", &scores[index].visual);
-    } while (scores[index].visual < 10 || scores[index].visual > 100);
-    
-    do {
-        printf("Expression: ");
-        scanf("%d", &scores[index].expression);
-    } while (scores[index].expression < 10 || scores[index].expression > 100);
-    
-    getchar(); // Consume newline
-}
-
-// Calculate total scores
-void calculateTotals(ScoreSheet scores[]) {
-    for (int i = 0; i < 6; i++) {
-        scores[i].total = scores[i].music + scores[i].dance + scores[i].vocal + 
-                         scores[i].visual + scores[i].expression;
+        
+        // Show updated scores
+        show_scores(judge_num);
     }
 }
 
-// Display final results with top 4 candidates
-void displayFinalResults(ScoreSheet scores[], Candidate candidates[]) {
-    // Simple sorting by total score (bubble sort)
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5 - i; j++) {
-            if (scores[j].total < scores[j+1].total) {
-                // Swap scores
-                ScoreSheet temp = scores[j];
-                scores[j] = scores[j+1];
-                scores[j+1] = temp;
-                
-                // Swap candidates
-                Candidate tempC = candidates[j];
-                candidates[j] = candidates[j+1];
-                candidates[j+1] = tempC;
-            }
+// Function to calculate final results
+void show_results() {
+    int total[NUM_CANDIDATES] = {0};
+    
+    // Add up all scores from all judges
+    for (int i = 0; i < NUM_JUDGES; i++) {
+        for (int j = 0; j < NUM_CANDIDATES; j++) {
+            total[j] += scores[i][j].value;
         }
     }
     
-    printf("=======================================\n");
-    printf("Compiling final selection results...\n");
-    printf("=======================================\n");
-    printf("###########################################\n");
-    printf("# Congratulations! Welcome to Milliways!  #\n");
-    printf("###########################################\n");
+    // Simple sorting to find top 4
+    int top_scores[4] = {0};
+    char *top_names[4] = {0};
     
     for (int i = 0; i < 4; i++) {
-        printf("%d. %s\n", i+1, candidates[i].name);
+        int max = 0;
+        int max_index = 0;
+        
+        for (int j = 0; j < NUM_CANDIDATES; j++) {
+            if (total[j] > max) {
+                max = total[j];
+                max_index = j;
+            }
+        }
+        
+        top_scores[i] = max;
+        top_names[i] = candidates[max_index].name;
+        total[max_index] = -1; // Mark as already selected
     }
-    printf("\n");
+    
+    // Display results
+    printf("\n=======================================\n");
+    printf("Final Selection Results:\n");
+    printf("=======================================\n");
+    printf("Top 4 Candidates:\n");
+    for (int i = 0; i < 4; i++) {
+        printf("%d. %s\n", i+1, top_names[i]);
+    }
+}
+
+// Main function
+int main() {
+    setup_data();
+    
+    // Each judge enters scores
+    for (int j = 0; j < NUM_JUDGES; j++) {
+        printf("\n####################################\n");
+        printf("#     Audition Evaluation Entry    #\n");
+        printf("####################################\n");
+        printf("Judge: %s (%s)\n", judges[j].name, judges[j].expertise);
+        printf("++++++++++++++++++++++++++++++++++++\n");
+        
+        // Enter scores for each candidate
+        for (int c = 0; c < NUM_CANDIDATES; c++) {
+            printf("Candidate: %s\n", candidates[c].name);
+            printf("Enter score (10-100): ");
+            scores[j][c].value = get_valid_score();
+            printf("------------------------------------\n");
+        }
+        
+        // Show and confirm scores
+        show_scores(j);
+        change_scores(j);
+    }
+    
+    // Show final results
+    show_results();
+    
+    return 0;
 }
